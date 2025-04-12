@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: ashotkostanyan/web-app:v7
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-configmap
+                  key: database_url
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql_root_username 
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql_root_password
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql_root_db_name
+          ports:
+            - containerPort: 3000
+      initContainers:
+        - name: app-init
+          image: ashotkostanyan/web-app:v7
+          command: ["node", "migrate.js"]
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-configmap
+                  key: database_url
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql_root_username 
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql_root_password
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql_root_db_name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-service
+spec:
+  selector:
+    app: app
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000

@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: express_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=testDssb
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["/bin/sh", "-c", "sleep 20 && npm start"]
+
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      retries: 10
+      start_period: 30s
+      timeout: 5s
+
+networks:
+  default:
+    name: app-network
+
+volumes:
+  mysql_data:
