@@ -20,6 +20,7 @@ async function migrate() {
     } finally {
         pool.end();
     }
+    process.exit(0);
 }
 
 migrate();
