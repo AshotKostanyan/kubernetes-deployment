@@ -1,17 +1,28 @@
-#name: Deploy to Kubernetes
-#on:
-#  workflow_run:
-#    workflows: ["Build and Push Image"]
-#    types:
-#      - completed
-#
-#jobs:
-#  deploy:
-#    runs-on: self-hosted
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - name: Update Kubernetes deployment
-#        run: |
-#          kubectl set image deployment/my-app my-container=yourname/app:latest -n your-namespace
-#          kubectl rollout status deployment/my-app -n your-namespace
+name: Deploy to Kubernetes
+on:
+  workflow_run:
+    workflows: ["Build and publish image to Docker Hub"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f ./kubernetes-instructions/back-deployment.yaml
+          kubectl apply -f ./kubernetes-instructions/mysql-secret.yaml
+          kubectl apply -f ./kubernetes-instructions/mysql-config-map.yaml
+          kubectl apply -f ./kubernetes-instructions/mysql-deployment.yaml
+          kubectl apply -f ./kubernetes-instructions/ingress.yaml
+
+
+      - name: Update Kubernetes deployment
+        run: |
+          kubectl set image deployment/app app=ashotkostanyan/app:latest
+          kubectl rollout status deployment/app
+
