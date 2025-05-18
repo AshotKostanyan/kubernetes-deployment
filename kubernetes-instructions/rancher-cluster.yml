@@ -1,0 +1,25 @@
+nodes:
+  - address: 192.168.1.33
+    user: ashot
+    role: [controlplane, worker, etcd]
+  - address: 192.168.1.34
+    user: ashot
+    role: [controlplane, worker, etcd]
+  - address: 192.168.1.35
+    user: ashot
+    role: [controlplane, worker, etcd]
+
+services:
+  etcd:
+    snapshot: true
+    creation: 6h
+    retention: 24h
+
+# Required for external TLS termination with
+# ingress-nginx v0.22+
+ingress:
+  provider: nginx
+  options:
+    use-forwarded-headers: "true"
+
+kubernetes_version: v1.25.6-rancher4-1
