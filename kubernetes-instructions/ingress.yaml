@@ -15,10 +15,3 @@ spec:
             name: back-service
             port:
               number: 3000
-
-# manifests running sequence on server
-#1. mysql-secret
-#2. mysql-deployment
-#3. mysql-config-map
-#4. back-deployment
-#5. ingress
