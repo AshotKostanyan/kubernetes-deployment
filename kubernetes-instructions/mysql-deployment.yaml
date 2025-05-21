@@ -33,12 +33,12 @@ spec:
               mountPath: /var/lib/mysql
           livenessProbe:
             exec:
-              command: ["mysqladmin", "ping", "-h", "localhost"]
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1"]
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             exec:
-              command: ["mysqladmin", "ping", "-h", "localhost"]
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1"]
             initialDelaySeconds: 10
             periodSeconds: 5
       volumes:
