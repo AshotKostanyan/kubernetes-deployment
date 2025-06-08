@@ -1,78 +1,81 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: {{ .Values.app.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.app.replicas }}
   selector:
     matchLabels:
-      app: app
+      app: {{ .Values.app.name }}
   template:
     metadata:
       labels:
-        app: app
+        app: {{ .Values.app.name }}
     spec:
       containers:
-        - name: app
-          image: ashotkostanyan/web-app:v7
+        - name: {{ .Values.app.name }}
+          image: {{ .Values.app.image }}
           env:
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: mysql-configmap
-                  key: database_url
+                  name: {{ .Values.env.dbHost.configMap }}
+                  key: {{ .Values.env.dbHost.key }}
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql_root_username 
+                  name: {{ .Values.env.dbUser.secret }}
+                  key: {{ .Values.env.dbUser.key }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql_root_password
+                  name: {{ .Values.env.dbPassword.secret }}
+                  key: {{ .Values.env.dbPassword.key }}
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql_root_db_name
+                  name: {{ .Values.env.dbName.secret }}
+                  key: {{ .Values.env.dbName.key }}
           ports:
-            - containerPort: 3000
+            - containerPort: {{ .Values.app.port }}
       initContainers:
-        - name: app-init
-          image: ashotkostanyan/web-app:v7
+        - name: {{ .Values.initContainer.name }}
+          image: {{ .Values.app.image }}
           command: ["node", "migrate.js"]
           env:
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: mysql-configmap
-                  key: database_url
+                  name: {{ .Values.env.dbHost.configMap }}
+                  key: {{ .Values.env.dbHost.key }}
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql_root_username 
+                  name: {{ .Values.env.dbUser.secret }}
+                  key: {{ .Values.env.dbUser.key }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql_root_password
+                  name: {{ .Values.env.dbPassword.secret }}
+                  key: {{ .Values.env.dbPassword.key }}
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql_root_db_name
+                  name: {{ .Values.env.dbName.secret }}
+                  key: {{ .Values.env.dbName.key }}
+
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: back-service
+  name: {{ .Values.service.name }}
 spec:
   selector:
-    app: app
-  type: ClusterIP
+    app: {{ .Values.app.name }}
+  type: {{ .Values.service.type }}
   ports:
-  - protocol: TCP
-    port: 3000
-    targetPort: 3000
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.app.port }}

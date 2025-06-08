@@ -1,0 +1,64 @@
+app:
+  name: app
+  image: ashotkostanyan/web-app:v7
+  replicas: 1
+  port: 3000
+
+initContainer:
+  name: app-init
+
+env:
+  dbHost:
+    configMap: mysql-configmap
+    key: database_url
+  dbUser:
+    secret: mysql-secret
+    key: mysql_root_username
+  dbPassword:
+    secret: mysql-secret
+    key: mysql_root_password
+  dbName:
+    secret: mysql-secret
+    key: mysql_root_db_name
+
+service:
+  name: back-service
+  type: ClusterIP
+  port: 3000
+
+configmap:
+  name: mysql-configmap
+  key: database_url
+  value: mysql-service
+
+mysql:
+  name: mysql
+  image: mysql:8.0
+  replicas: 1
+  port: 3306
+  secret:
+    name: mysql-secret
+    rootPasswordKey: mysql_root_password
+    dbNameKey: mysql_root_db_name
+  service:
+    name: mysql-service
+    port: 3306
+
+
+secret:
+  name: mysql-secret
+  keys:
+    username: mysql_root_username
+    password: mysql_root_password
+    dbname: mysql_root_db_name
+  values:
+    username: cm9vdA==
+    password: cm9vdA==
+    dbname: dGVzdERi
+
+ingress:
+  name: app-ingress
+  className: nginx
+  host: app.local
+  path: /
+  pathType: Prefix

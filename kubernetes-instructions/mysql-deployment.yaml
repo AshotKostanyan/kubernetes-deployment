@@ -1,33 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql
+  name: {{ .Values.mysql.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.mysql.replicas }}
   selector:
     matchLabels:
-      app: mysql
+      app: {{ .Values.mysql.name }}
   template:
     metadata:
       labels:
-        app: mysql
+        app: {{ .Values.mysql.name }}
     spec:
       containers:
-        - name: mysql
-          image: mysql:8.0
+        - name: {{ .Values.mysql.name }}
+          image: {{ .Values.mysql.image }}
           ports:
-            - containerPort: 3306
+            - containerPort: {{ .Values.mysql.port }}
           env:
-          - name: MYSQL_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mysql-secret
-                key: mysql_root_password
-          - name: MYSQL_DATABASE
-            valueFrom:
-              secretKeyRef:
-                name: mysql-secret
-                key: mysql_root_db_name
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secret.name }}
+                  key: {{ .Values.mysql.secret.rootPasswordKey }}
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secret.name }}
+                  key: {{ .Values.mysql.secret.dbNameKey }}
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
@@ -44,16 +44,3 @@ spec:
       volumes:
         - name: mysql-storage
           emptyDir: {}
----
-
-apiVersion: v1
-kind: Service
-metadata: 
-  name: mysql-service
-spec:
-  selector:
-    app: mysql
-  ports:
-  - protocol: TCP
-    port: 3306
-    targetPort: 3306
